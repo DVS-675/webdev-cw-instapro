@@ -196,3 +196,21 @@
   width: 100%;
   text-align: center;
 }
+.input_description {
+  box-sizing: border-box;
+  padding: 15px;
+  font-size: 14px;
+  line-height: 18px;
+  color: rgb(4, 18, 27);
+  border: none;
+  border-radius: 5px;
+  background-color: #e8e8e8;
+  height: 120px;
+}
+
+.photo_description {
+  padding-top: 10px;
+  margin-bottom: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
