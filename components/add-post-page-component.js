@@ -1,7 +1,11 @@
+import { onAddPostClick } from "../api.js";
+import { POSTS_PAGE } from "../routes.js";
+import { getToken, goToPage } from "../index.js";
 import { renderHeaderComponent } from "./header-component.js";
 import { renderUploadImageComponent } from "./upload-image-component.js";
 
-export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
+export function renderAddPostPageComponent({ appEl }) {
+  let imageUrl = "";
   const render = () => {
     // TODO: Реализовать страницу добавления поста
     const appHtml = `
@@ -14,7 +18,7 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
             <div class="form-inputs">
                 <div class="upload-image-container"></div>
                 <p class='photo_description'>Опишите фотографию</p>
-                <input type="text" id="description-input" class="input_description" />
+                <textarea type="text" id="description-input" class="input_description"></textarea>
                 <button class="button" id="add-button">Добавить</button>
             </div>       
       </div>     
@@ -27,7 +31,7 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
     renderHeaderComponent({
       element: document.querySelector(".header-container"),
     });
-    
+
     //рендер формы добавления фото
     const uploadImageContainer = appEl.querySelector(".upload-image-container");
 
@@ -41,10 +45,31 @@ export function renderAddPostPageComponent({ appEl, onAddPostClick }) {
     }
 
     document.getElementById("add-button").addEventListener("click", () => {
+      const postDescription =
+        document.getElementById("description-input").value;
+
+      if (!imageUrl) {
+        alert("Не выбрана фотография");
+        return;
+      }
+
+      if (!postDescription) {
+        alert("Добавьте описание фотографии");
+        return;
+      }
+
       onAddPostClick({
-        description: "Описание картинки",
-        imageUrl: "https://image.png",
-      });
+        token: getToken(),
+        description: postDescription,
+        imageUrl,
+      })
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          console.log(data);
+          goToPage(POSTS_PAGE);
+        });
     });
   };
 
