@@ -2,6 +2,9 @@ import { USER_POSTS_PAGE } from "../routes.js";
 import { renderHeaderComponent } from "./header-component.js";
 import { posts, goToPage, getToken } from "../index.js";
 import { addLike, deleteLike } from "../api.js";
+import { formatDistanceToNow } from "date-fns";
+import { ru } from "date-fns/locale";
+import { user } from "../index.js";
 
 export function renderPostsPageComponent({ appEl }) {
   // TODO: реализовать рендер постов из api
@@ -11,7 +14,7 @@ export function renderPostsPageComponent({ appEl }) {
    * TODO: чтобы отформатировать дату создания поста в виде "19 минут назад"
    * можно использовать https://date-fns.org/v2.29.3/docs/formatDistanceToNow
    */
-
+  /* const createDate = formatDistanceToNow(new Date(post.createdAt), {locale: ru, addSuffix: true}) */
   const postsHtml =
     posts &&
     posts
@@ -42,7 +45,10 @@ export function renderPostsPageComponent({ appEl }) {
             ${post.description}
           </p>
           <p class="post-date">
-            ${post.createdAt}
+            ${formatDistanceToNow(new Date(post.createdAt), {
+              locale: ru,
+              addSuffix: true,
+            })}
           </p>
       </li>`;
       })
@@ -76,7 +82,7 @@ export function renderPostsPageComponent({ appEl }) {
       const postId = buttonLikeElement.dataset.postId;
       const index = buttonLikeElement.closest(".post").dataset.index;
 
-      if (posts[index].isLiked === false) {
+      if (user && posts[index].isLiked === false) {
         addLike({
           token: getToken(),
           postId: postId,
@@ -88,7 +94,7 @@ export function renderPostsPageComponent({ appEl }) {
           });
           renderPostsPageComponent({ appEl });
         });
-      } else {
+      } else if (user && posts[index].isLiked === true) {           
         deleteLike({
           token: getToken(),
           postId: postId,
