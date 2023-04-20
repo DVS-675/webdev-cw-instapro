@@ -1,13 +1,12 @@
 import { USER_POSTS_PAGE } from "../routes.js";
 import { renderHeaderComponent } from "./header-component.js";
-import { posts, goToPage, getToken } from "../index.js";
+import { goToPage, getToken } from "../index.js";
 import { addLike, deleteLike } from "../api.js";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
 import { user } from "../index.js";
 
-export function renderPostsPageComponent({ appEl }) {
-  
+export function renderPostsPageComponent({ appEl, posts }) {
   // TODO: реализовать рендер постов из api
   console.log("Актуальный список постов:", posts);
 
@@ -15,13 +14,11 @@ export function renderPostsPageComponent({ appEl }) {
    * TODO: чтобы отформатировать дату создания поста в виде "19 минут назад"
    * можно использовать https://date-fns.org/v2.29.3/docs/formatDistanceToNow
    */
-  
-  const postsHtml =
-    posts &&
-    posts
-      .map((post, index) => {
-        console.log(post.likes)
-        return `<li class="post" data-index = ${index}>
+
+  const postsHtml = posts
+    .map((post, index) => {
+      console.log(post.likes);
+      return `<li class="post" data-index = ${index}>
           <div class="post-header" data-user-id=${post.user.id}>
             <img src=${post.user.imageUrl} class="post-header__user-image">
             <p class="post-header__user-name">${post.user.name}</p>
@@ -59,8 +56,8 @@ export function renderPostsPageComponent({ appEl }) {
             })}
           </p>
       </li>`;
-      })
-      .join("");
+    })
+    .join("");
 
   const appHtml = `
               <div class="page-container">
@@ -89,28 +86,36 @@ export function renderPostsPageComponent({ appEl }) {
     buttonLikeElement.addEventListener("click", () => {
       const postId = buttonLikeElement.dataset.postId;
       const index = buttonLikeElement.closest(".post").dataset.index;
-      
+
       if (user && posts[index].isLiked === false) {
         addLike({
           token: getToken(),
           postId: postId,
-        }).then(() => {          
+        }).catch(() => {
+          posts[index].isLiked = false;
+          posts[index].likes.pop();
+          renderPostsPageComponent({ appEl, posts });
+        });
+        posts[index].isLiked = true;
+        posts[index].likes.push({
+          id: user.id,
+          name: user.name,
+        });
+        renderPostsPageComponent({ appEl, posts });
+      } else if (user && posts[index].isLiked === true) {
+        deleteLike({
+          token: getToken(),
+          postId: postId,
+        }).catch(() => {
           posts[index].isLiked = true;
           posts[index].likes.push({
             id: user.id,
             name: user.name,
           });
-          renderPostsPageComponent({ appEl });
         });
-      } else if (user && posts[index].isLiked === true) {
-        deleteLike({
-          token: getToken(),
-          postId: postId,
-        }).then(() => {
-          posts[index].isLiked = false;
-          posts[index].likes.pop();
-          renderPostsPageComponent({ appEl });
-        });
+        posts[index].isLiked = false;
+        posts[index].likes.pop();
+        renderPostsPageComponent({ appEl, posts });
       }
     });
   }
