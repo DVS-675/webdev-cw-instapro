@@ -7,6 +7,7 @@ import { ru } from "date-fns/locale";
 import { user } from "../index.js";
 
 export function renderPostsPageComponent({ appEl }) {
+  
   // TODO: реализовать рендер постов из api
   console.log("Актуальный список постов:", posts);
 
@@ -14,11 +15,12 @@ export function renderPostsPageComponent({ appEl }) {
    * TODO: чтобы отформатировать дату создания поста в виде "19 минут назад"
    * можно использовать https://date-fns.org/v2.29.3/docs/formatDistanceToNow
    */
-  /* const createDate = formatDistanceToNow(new Date(post.createdAt), {locale: ru, addSuffix: true}) */
+  
   const postsHtml =
     posts &&
     posts
       .map((post, index) => {
+        console.log(post.likes)
         return `<li class="post" data-index = ${index}>
           <div class="post-header" data-user-id=${post.user.id}>
             <img src=${post.user.imageUrl} class="post-header__user-image">
@@ -37,7 +39,13 @@ export function renderPostsPageComponent({ appEl }) {
             
             </button>
           <p class="post-likes-text">
-            Нравится: <strong>${post.likes.length}</strong>
+            Нравится: <strong>${
+              post.likes.length > 1
+                ? post.likes[0].name + ` и еще ${post.likes.length - 1}`
+                : post.likes.length
+                ? post.likes[0].name
+                : "0"
+            }</strong>
           </p>
         </div>
           <p class="post-text">
@@ -81,20 +89,20 @@ export function renderPostsPageComponent({ appEl }) {
     buttonLikeElement.addEventListener("click", () => {
       const postId = buttonLikeElement.dataset.postId;
       const index = buttonLikeElement.closest(".post").dataset.index;
-
+      
       if (user && posts[index].isLiked === false) {
         addLike({
           token: getToken(),
           postId: postId,
-        }).then(() => {
+        }).then(() => {          
           posts[index].isLiked = true;
           posts[index].likes.push({
-            id: posts[index].user.id,
-            name: posts[index].user.name,
+            id: user.id,
+            name: user.name,
           });
           renderPostsPageComponent({ appEl });
         });
-      } else if (user && posts[index].isLiked === true) {           
+      } else if (user && posts[index].isLiked === true) {
         deleteLike({
           token: getToken(),
           postId: postId,
